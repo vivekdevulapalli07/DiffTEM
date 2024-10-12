@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog, messagebox
-from tkinterdnd2 import TkinterDnD, DND_FILES
-import ttkbootstrap as ttkb
 from ase.io import read
 import numpy as np
 
@@ -16,12 +14,24 @@ def hexagonal_d_spacing(a, c, h, k, l):
 
 # Function to calculate d-spacings and generate the table
 def calculate_d_spacings(crystal_system, a, c=None):
-    cubic_close_packed_planes = [(1, 1, 1), (2, 0, 0), (2, 2, 0), (3, 1, 1), (2, 2, 2)]
-    hexagonal_close_packed_planes = [(1, 0, -1, 1), (1, 0, -1, 0), (1, 1, -2, 0), (1, 1, -2, 1)]
+    # All low-index planes for cubic
+    cubic_low_index_planes = [
+        (1, 0, 0), (1, 1, 0), (1, 1, 1), (2, 0, 0), (2, 1, 0),
+        (2, 1, 1), (2, 2, 0), (3, 1, 0), (3, 1, 1), (2, 2, 2)
+    ]
+    
+    # All low-index planes for hexagonal (Miller-Bravais)
+    hexagonal_low_index_planes = [
+        (0, 0, 0, 1), (1, 0, -1, 0), (1, 0, -1, 1), (1, 1, -2, 0),
+        (1, 1, -2, 1), (2, 0, -2, 0), (2, 0, -2, 1), (2, 1, -3, 0),
+        (2, 1, -3, 1), (1, 1, -2, 2)
+    ]
+    
     d_spacings_table = []
     
     if crystal_system == 'cubic':
-        for h, k, l in cubic_close_packed_planes:
+        # Loop through the cubic low-index planes
+        for h, k, l in cubic_low_index_planes:
             d = cubic_d_spacing(a, h, k, l)
             inverse_d = 10 / (d)  # Convert to nm⁻¹
             d_spacings_table.append([f"({h}, {k}, {l})", f"{d:.4f}", f"{inverse_d:.4f}"])
@@ -29,7 +39,9 @@ def calculate_d_spacings(crystal_system, a, c=None):
     elif crystal_system == 'hexagonal':
         if c is None:
             raise ValueError("For hexagonal system, 'c' parameter is required.")
-        for h, k, i, l in hexagonal_close_packed_planes:
+        
+        # Loop through the hexagonal low-index planes
+        for h, k, i, l in hexagonal_low_index_planes:
             d = hexagonal_d_spacing(a, c, h, k, l)
             inverse_d = 10 / (d)  # Convert to nm⁻¹
             d_spacings_table.append([f"({h}, {k}, {i}, {l})", f"{d:.4f}", f"{inverse_d:.4f}"])
@@ -116,4 +128,5 @@ def on_drop(event):
     if file_path.startswith('{') and file_path.endswith('}'):
         file_path = file_path[1:-1]  # Remove curly braces on Windows paths
     process_cif(file_path)
+    
 
